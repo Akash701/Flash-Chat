@@ -42,8 +42,9 @@ class _ChatScreenState extends State<ChatScreen> {
   // }
 
   void getStream() async {
-    await for (var chat in _firestore.collection('messages').snapshots()) {
-      for (var message in chat.docs) {
+    await for (var snapashot in _firestore.collection('messages').snapshots()) {
+      // This is firebase snapshot
+      for (var message in snapashot.docs) {
         print(message.data());
       }
     }
@@ -56,12 +57,12 @@ class _ChatScreenState extends State<ChatScreen> {
         leading: null,
         actions: <Widget>[
           IconButton(
-              icon: Icon(Icons.send),
+              icon: Icon(Icons.close),
               onPressed: () {
                 // _auth.signOut();
                 // Navigator.pop(context);
                 // getDocument();
-                getStream();
+                //getStream();
               }),
         ],
         title: Text('⚡️Chat'),
@@ -72,6 +73,28 @@ class _ChatScreenState extends State<ChatScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
+            StreamBuilder<QuerySnapshot>(
+              stream: _firestore.collection('messages').snapshots(),
+              builder: (context, snapshot) {
+                //this snapshot is flutter's AsyncSnapshot
+                List<Text> messageWidgets = [];
+                if (snapshot.hasData) {
+                  final messages = snapshot.data.docs;
+
+                  for (var message in messages) {
+                    final messageData = message.data();
+                    final messageText = messageData['text'];
+                    final messageSender = messageData['sender'];
+                    final messageWidget =
+                        Text('$messageSender said $messageText');
+                    messageWidgets.add(messageWidget);
+                  }
+                }
+                return Column(
+                  children: messageWidgets,
+                );
+              },
+            ),
             Container(
               decoration: kMessageContainerDecoration,
               child: Row(
