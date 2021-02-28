@@ -43,14 +43,14 @@ class _ChatScreenState extends State<ChatScreen> {
   //   }
   // }
 
-  void getStream() async {
-    await for (var snapshot in _firestore.collection('messages').snapshots()) {
-      // This is firebase snapshot
-      for (var message in snapshot.docs) {
-        print(message.data());
-      }
-    }
-  }
+  // void getStream() async {
+  //   await for (var snapshot in _firestore.collection('messages').snapshots()) {
+  //     // This is firebase snapshot
+  //     for (var message in snapshot.docs) {
+  //       print(message.data());
+  //     }
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -61,10 +61,8 @@ class _ChatScreenState extends State<ChatScreen> {
           IconButton(
               icon: Icon(Icons.close),
               onPressed: () {
-                // _auth.signOut();
-                // Navigator.pop(context);
-                // getDocument();
-                //getStream();
+                _auth.signOut();
+                Navigator.pop(context);
               }),
         ],
         title: Text('⚡️Chat'),
@@ -122,7 +120,7 @@ class MessageStream extends StatelessWidget {
         //this snapshot is flutter's AsyncSnapshot
         List<MessageBubble> messageBubbles = [];
         if (snapshot.hasData) {
-          final messages = snapshot.data.docs;
+          final messages = snapshot.data.docs.reversed;
 
           for (var message in messages) {
             final messageData = message
@@ -140,6 +138,7 @@ class MessageStream extends StatelessWidget {
         }
         return Expanded(
           child: ListView(
+            reverse: true,
             padding: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
             children: messageBubbles,
           ),
