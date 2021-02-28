@@ -42,9 +42,9 @@ class _ChatScreenState extends State<ChatScreen> {
   // }
 
   void getStream() async {
-    await for (var snapashot in _firestore.collection('messages').snapshots()) {
+    await for (var snapshot in _firestore.collection('messages').snapshots()) {
       // This is firebase snapshot
-      for (var message in snapashot.docs) {
+      for (var message in snapshot.docs) {
         print(message.data());
       }
     }
@@ -77,21 +77,27 @@ class _ChatScreenState extends State<ChatScreen> {
               stream: _firestore.collection('messages').snapshots(),
               builder: (context, snapshot) {
                 //this snapshot is flutter's AsyncSnapshot
-                List<Text> messageWidgets = [];
+                List<MessageBubble> messageBubbles = [];
                 if (snapshot.hasData) {
                   final messages = snapshot.data.docs;
 
                   for (var message in messages) {
-                    final messageData = message.data();
+                    final messageData = message
+                        .data(); //key and value inside the firebase document eg: text and sender
                     final messageText = messageData['text'];
                     final messageSender = messageData['sender'];
-                    final messageWidget =
-                        Text('$messageSender said $messageText');
-                    messageWidgets.add(messageWidget);
+                    final messageBubble = MessageBubble(
+                      text: messageText,
+                      sender: messageSender,
+                    );
+                    messageBubbles.add(messageBubble);
                   }
                 }
-                return Column(
-                  children: messageWidgets,
+                return Expanded(
+                  child: ListView(
+                    padding: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+                    children: messageBubbles,
+                  ),
                 );
               },
             ),
@@ -125,6 +131,21 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class MessageBubble extends StatelessWidget {
+  MessageBubble({this.text, this.sender});
+  final String text;
+  final String sender;
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      '$sender said $text',
+      style: TextStyle(
+        fontSize: 50,
       ),
     );
   }
