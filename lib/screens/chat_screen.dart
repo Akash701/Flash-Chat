@@ -17,6 +17,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final messageController = TextEditingController();
   final _auth = FirebaseAuth.instance;
   String messageText;
+  Timestamp timestamp;
 
   @override
   void initState() {
@@ -92,6 +93,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     onPressed: () {
                       messageController.clear();
                       _firestore.collection('messages').add({
+                        'timestamp': FieldValue.serverTimestamp(),
                         'Text': messageText,
                         'sender': loggedInUser.email,
                       });
@@ -115,13 +117,13 @@ class MessageStream extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-      stream: _firestore.collection('messages').snapshots(),
+      stream:
+          _firestore.collection('messages').orderBy('timestamp').snapshots(),
       builder: (context, snapshot) {
         //this snapshot is flutter's AsyncSnapshot
         List<MessageBubble> messageBubbles = [];
         if (snapshot.hasData) {
           final messages = snapshot.data.docs.reversed;
-
           for (var message in messages) {
             final messageData = message
                 .data(); //key and value inside the firebase document eg: text and sender
